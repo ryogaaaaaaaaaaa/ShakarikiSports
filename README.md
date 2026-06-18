@@ -39,5 +39,6 @@ godot --headless --path /Users/ryoga/Documents/ShakarikiSports2 --export-release
 - ジャンプ、ライン変更、ドラフティング、補給、ギア選択をカード化
 - ニアミス、ジャスト突破、カードコンボ時にヒットストップ、画面揺れ、フラッシュ、スピードラインを発生
 - 画像・音素材は無料かつローカル生成。外部の有料素材や従量課金素材は未使用
+- 日本語表示用フォントは Google Fonts の M PLUS 1p Regular（SIL Open Font License）を同梱
 
 設計段階の複数案は [docs/design_options.md](/Users/ryoga/Documents/ShakarikiSports2/docs/design_options.md) に残しています。

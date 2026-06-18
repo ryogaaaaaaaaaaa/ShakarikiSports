@@ -402,6 +402,7 @@ var bg_texture
 var rider_texture
 var atlas_texture
 var card_texture
+var ui_font
 var sfx = {}
 
 var stage_index = 0
@@ -471,6 +472,13 @@ var suppress_mouse_click_timer = 0.0
 
 func _ready():
 	rng.randomize()
+	ui_font = ResourceLoader.load("res://assets/fonts/MPLUS1p-Regular.ttf")
+	if ui_font == null:
+		var dynamic_font = FontFile.new()
+		if dynamic_font.load_dynamic_font("res://assets/fonts/MPLUS1p-Regular.ttf") == OK:
+			ui_font = dynamic_font
+	if ui_font != null:
+		add_theme_font_override("font", ui_font)
 	bg_texture = load_texture_file("res://assets/generated/background_neon_downhill.png")
 	rider_texture = load_texture_file("res://assets/generated/rider_sprinter.png")
 	atlas_texture = load_texture_file("res://assets/generated/object_atlas.png")
@@ -1533,7 +1541,7 @@ func draw_touch_controls(size):
 func draw_touch_button(rect, label):
 	draw_rect(rect, Color(0.02, 0.04, 0.05, 0.72))
 	draw_rect(rect, Color(0.55, 0.95, 1.0, 0.7), false, 3)
-	var font = get_theme_default_font()
+	var font = get_ui_font()
 	var measured = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 18)
 	var pos = rect.position + Vector2((rect.size.x - measured.x) * 0.5, rect.size.y * 0.5 + 7)
 	font.draw_string(get_canvas_item(), pos, label, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(0.86, 1.0, 0.95))
@@ -1611,13 +1619,19 @@ func draw_round_rect(rect, fill, stroke, width):
 	draw_rect(rect, stroke, false, width)
 
 
+func get_ui_font():
+	if ui_font != null:
+		return ui_font
+	return get_theme_default_font()
+
+
 func draw_text(text, pos, size, color):
-	var font = get_theme_default_font()
+	var font = get_ui_font()
 	font.draw_string(get_canvas_item(), pos, str(text), HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
 
 
 func draw_fit_text(text, pos, width, max_size, min_size, color):
-	var font = get_theme_default_font()
+	var font = get_ui_font()
 	var size = max_size
 	while size > min_size and font.get_string_size(str(text), HORIZONTAL_ALIGNMENT_LEFT, -1, size).x > width:
 		size -= 1
@@ -1625,7 +1639,7 @@ func draw_fit_text(text, pos, width, max_size, min_size, color):
 
 
 func draw_centered(text, y, size, color):
-	var font = get_theme_default_font()
+	var font = get_ui_font()
 	var measured = font.get_string_size(str(text), HORIZONTAL_ALIGNMENT_LEFT, -1, size)
 	var x = (get_viewport_rect().size.x - measured.x) * 0.5
 	font.draw_string(get_canvas_item(), Vector2(x, y), str(text), HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
@@ -1642,7 +1656,7 @@ func draw_wrapped(text, pos, width, size, color):
 			words.append(source.substr(i, 1))
 	var line = ""
 	var y = pos.y
-	var font = get_theme_default_font()
+	var font = get_ui_font()
 	for word in words:
 		var candidate = word if line == "" else line + joiner + word
 		if font.get_string_size(candidate, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x > width and line != "":
