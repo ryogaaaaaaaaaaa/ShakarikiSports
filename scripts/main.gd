@@ -255,8 +255,148 @@ const RELIC_IDS = [
 	"brakes", "bottle", "jersey", "computer", "chainwax", "helmet"
 ]
 
+const STAGE_JA = [
+	{
+		"name": "Act 1-1 ネオン商店街",
+		"flavor": "縁石に注意。ギリギリ回避をスピードに変えろ。"
+	},
+	{
+		"name": "Act 1-2 雨のアーケードスプリント",
+		"flavor": "道幅が狭い。歓声が判断を鈍らせる。"
+	},
+	{
+		"name": "Act 2-1 山岳スイッチバック",
+		"flavor": "1メートルごとに脚が削れる。登坂カードの出番だ。"
+	},
+	{
+		"name": "Act 2-2 グラベル急降下",
+		"flavor": "重力は無料。制御は有料級。"
+	},
+	{
+		"name": "Act 3-1 デス・プロトン",
+		"flavor": "集団の後ろにつけ。そこから引き裂け。"
+	},
+	{
+		"name": "Final: チェーンブレイク大通り",
+		"flavor": "最後の1キロがツアーの全てを決める。"
+	}
+]
+
+const CARD_JA = {
+	"sprint": {"name": "レッドラインスプリント", "desc": "瞬間速度+14。コンボ+1。"},
+	"bunny": {"name": "バニーホップ", "desc": "コーン、柵、穴を飛び越える。"},
+	"brake": {"name": "フェザーブレーキ", "desc": "ヘアピンを安全に。ガード+1。"},
+	"draft": {"name": "スリップストリーム", "desc": "4秒ドラフト。スタミナと速度を得る。"},
+	"gel": {"name": "エナジージェル", "desc": "スタミナ34回復。1枚ドロー。"},
+	"line": {"name": "ゴーストライン", "desc": "0.8秒すり抜け。ライン変更が自由。"},
+	"wheelie": {"name": "マニュアルポップ", "desc": "2.6秒ポットホール無効。ガード+1。"},
+	"predict": {"name": "ロードセンス", "desc": "危険を早めに表示。1枚ドロー。"},
+	"overdrive": {"name": "チェーンブレイク", "desc": "巨大加速。コンボ+2。派手。"},
+	"climb": {"name": "ダンシングクライム", "desc": "7秒間、登坂エンジンを点火。"},
+	"chain": {"name": "クリーンシフト", "desc": "2枚ドロー。小さく加速。"},
+	"revive": {"name": "ワンモアペダル", "desc": "落車を1回だけ救う保険を得る。"},
+	"tuck": {"name": "エアロタック", "desc": "下りで強い。加速を得る。"},
+	"surge": {"name": "プロトンサージ", "desc": "ドラフト中なら2枚ドローして加速。"},
+	"armor": {"name": "エルボールーム", "desc": "ガード+2。接触を耐える。"},
+	"clear": {"name": "オープンロード", "desc": "一番近い障害物を消す。"},
+	"tempo": {"name": "テンポエンジン", "desc": "6秒間スタミナ回復と速度下限。"},
+	"camera": {"name": "フォトフィニッシュ", "desc": "スコア獲得。ゴール前で強い。"}
+}
+
+const RELIC_JA = {
+	"bearings": {"name": "セラミックベアリング", "desc": "最高速+4、基礎速度+2。"},
+	"tires": {"name": "フラットラインタイヤ", "desc": "各ステージ開始時にガード+1。"},
+	"tape": {"name": "粘着バーテープ", "desc": "ニアミス時のスタミナ回復量が増える。"},
+	"fork": {"name": "カーボンフォーク", "desc": "ジャンプが高く、着地が安定する。"},
+	"radio": {"name": "チームラジオ", "desc": "各ステージ開始時の手札+1。"},
+	"cog": {"name": "黄金のコグ", "desc": "カード使用ごとにスコア+45。"},
+	"brakes": {"name": "レインブレーキ", "desc": "ヘアピンをより高速で抜けられる。"},
+	"bottle": {"name": "ダブルボトルケージ", "desc": "最大スタミナ+18。"},
+	"jersey": {"name": "逃げ屋ジャージ", "desc": "各ステージのコンボ開始値が2になる。"},
+	"computer": {"name": "小さなサイコン", "desc": "ロードセンスの効果時間が伸びる。"},
+	"chainwax": {"name": "静かなチェーンワックス", "desc": "カードコストが1下がる。"},
+	"helmet": {"name": "ラッキーヘルメット", "desc": "ラン中最初の落車でHPを失わない。"}
+}
+
+const HAZARD_JA = {
+	"cone": "交通コーン",
+	"pothole": "ポットホール",
+	"rail": "ガードレール",
+	"gap": "道路の切れ目",
+	"hairpin": "ヘアピン",
+	"rider": "ライバル"
+}
+
+const UI_TEXT = {
+	"en": {
+		"subtitle": "ROGUELITE CYCLING",
+		"tagline": "Deck-build your legs. Thread the death peloton. Break the final sprint.",
+		"start": "START RUN",
+		"title_controls": "Space/Enter: start   W/S or arrows: line   Space: hop   1-5: cards   L: language",
+		"title_note": "6 stages, card rewards, parts, hit-stop near misses, and one very rude final boulevard.",
+		"lang_button": "日本語",
+		"stage_clear": "Stage Clear",
+		"reward_prompt": "Choose a card or part for the next road.",
+		"deck_summary": "Current deck: %s cards   Parts: %s   Score: %s",
+		"race_over": "RACE OVER",
+		"retry": "Press R / Enter / Space to run it back.",
+		"win_title": "PHOTO FINISH!",
+		"win_body": "You broke the peloton and survived the boulevard.",
+		"win_retry": "Press R / Enter / Space for another route.",
+		"result_stats": "Score %s   Best combo x%s   Stage %s/6",
+		"win_stats": "Score %s   Best combo x%s   Deck %s   Parts %s",
+		"score": "Score %s",
+		"guard": "Guard %s",
+		"save": "Save %s",
+		"cost": "Cost %s",
+		"slow": "SLOW",
+		"touch_up": "UP",
+		"touch_down": "DOWN",
+		"touch_hop": "HOP",
+		"added": "Added %s",
+		"installed": "Installed %s",
+		"crashed": "Crashed on %s",
+		"stamina": "STAMINA",
+		"speed": "SPEED %.1f",
+		"distance": "DISTANCE"
+	},
+	"ja": {
+		"subtitle": "ローグライト・サイクリング",
+		"tagline": "脚をデッキで組み上げ、死の集団をすり抜け、最後のスプリントを叩き割れ。",
+		"start": "ラン開始",
+		"title_controls": "Space/Enter: 開始   W/S/矢印: ライン   Space: ホップ   1-5: カード   L: 言語",
+		"title_note": "6ステージ、カード報酬、パーツ、ヒットストップ付きニアミス、そして凶悪な最終大通り。",
+		"lang_button": "ENGLISH",
+		"stage_clear": "ステージクリア",
+		"reward_prompt": "次の道へ持っていくカードかパーツを選択。",
+		"deck_summary": "デッキ: %s枚   パーツ: %s   スコア: %s",
+		"race_over": "レース終了",
+		"retry": "R / Enter / Space で再挑戦。",
+		"win_title": "フォトフィニッシュ!",
+		"win_body": "プロトンを引き裂き、大通りを生き残った。",
+		"win_retry": "R / Enter / Space で別ルートへ。",
+		"result_stats": "スコア %s   最大コンボ x%s   ステージ %s/6",
+		"win_stats": "スコア %s   最大コンボ x%s   デッキ %s   パーツ %s",
+		"score": "スコア %s",
+		"guard": "ガード %s",
+		"save": "保険 %s",
+		"cost": "コスト %s",
+		"slow": "減速",
+		"touch_up": "上",
+		"touch_down": "下",
+		"touch_hop": "跳ぶ",
+		"added": "%s を追加",
+		"installed": "%s を装着",
+		"crashed": "%s で落車",
+		"stamina": "スタミナ",
+		"speed": "速度 %.1f",
+		"distance": "距離"
+	}
+}
+
 var screen = Screen.TITLE
 var rng = RandomNumberGenerator.new()
+var language = "ja"
 
 var bg_texture
 var rider_texture
@@ -322,6 +462,7 @@ var start_button_rect = Rect2()
 var touch_up_rect = Rect2()
 var touch_down_rect = Rect2()
 var touch_jump_rect = Rect2()
+var language_button_rect = Rect2()
 
 
 func _ready():
@@ -357,6 +498,58 @@ func _load_sfx():
 			sfx[id] = stream
 
 
+func t(key):
+	return UI_TEXT[language].get(key, UI_TEXT["en"].get(key, key))
+
+
+func toggle_language():
+	language = "en" if language == "ja" else "ja"
+	if screen == Screen.RACE and message_timer > 0.0:
+		race_message = stage_flavor(stage_index)
+
+
+func stage_name(index):
+	if language == "ja":
+		return STAGE_JA[index]["name"]
+	return STAGES[index]["name"]
+
+
+func stage_flavor(index):
+	if language == "ja":
+		return STAGE_JA[index]["flavor"]
+	return STAGES[index]["flavor"]
+
+
+func card_name(id):
+	if language == "ja" and CARD_JA.has(id):
+		return CARD_JA[id]["name"]
+	return CARD_LIBRARY[id]["name"]
+
+
+func card_desc(id):
+	if language == "ja" and CARD_JA.has(id):
+		return CARD_JA[id]["desc"]
+	return CARD_LIBRARY[id]["desc"]
+
+
+func relic_name(id):
+	if language == "ja" and RELIC_JA.has(id):
+		return RELIC_JA[id]["name"]
+	return RELIC_LIBRARY[id]["name"]
+
+
+func relic_desc(id):
+	if language == "ja" and RELIC_JA.has(id):
+		return RELIC_JA[id]["desc"]
+	return RELIC_LIBRARY[id]["desc"]
+
+
+func hazard_name_localized(kind):
+	if language == "ja" and HAZARD_JA.has(kind):
+		return HAZARD_JA[kind]
+	return hazard_name(kind)
+
+
 func _process(delta):
 	_update_visual_timers(delta)
 	if screen == Screen.RACE:
@@ -386,6 +579,9 @@ func _input(event):
 
 
 func _handle_key(keycode):
+	if keycode == KEY_L:
+		toggle_language()
+		return
 	if keycode == KEY_ESCAPE:
 		screen = Screen.TITLE
 		return
@@ -410,6 +606,9 @@ func _handle_key(keycode):
 
 
 func _handle_click(pos):
+	if language_button_rect.has_point(pos):
+		toggle_language()
+		return
 	if screen == Screen.TITLE:
 		if start_button_rect.has_point(pos):
 			start_run()
@@ -491,7 +690,7 @@ func setup_stage(index):
 	tempo_timer = 0.0
 	for i in range(4 + int(has_relic("radio"))):
 		draw_card()
-	show_message(STAGES[stage_index]["flavor"], 3.0)
+	show_message(stage_flavor(stage_index), 3.0)
 
 
 func _update_race(delta):
@@ -694,7 +893,7 @@ func crash(kind):
 		play_sfx("stage_clear", 0.9)
 		return
 	hp -= 1
-	death_reason = "Crashed on %s" % hazard_name(kind)
+	death_reason = t("crashed") % hazard_name_localized(kind)
 	play_sfx("crash", 1.0)
 	add_text_particle("CRASH!", Vector2(PLAYER_X + 70, current_player_y() - 80), Color(1.0, 0.2, 0.16))
 	if hp <= 0:
@@ -736,11 +935,11 @@ func choose_reward(index):
 	var choice = reward_choices[index]
 	if choice["kind"] == "card":
 		deck.append(choice["id"])
-		show_message("Added %s" % CARD_LIBRARY[choice["id"]]["name"], 1.4)
+		show_message(t("added") % card_name(choice["id"]), 1.4)
 	else:
 		relics.append(choice["id"])
 		apply_relic_immediate(choice["id"])
-		show_message("Installed %s" % RELIC_LIBRARY[choice["id"]]["name"], 1.4)
+		show_message(t("installed") % relic_name(choice["id"]), 1.4)
 	setup_stage(stage_index + 1)
 	screen = Screen.RACE
 
@@ -1018,6 +1217,7 @@ func _draw():
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if flash_timer > 0.0:
 		draw_rect(Rect2(Vector2.ZERO, size), Color(1, 1, 1, min(0.42, flash_timer * 5.0)))
+	draw_language_button(size)
 
 
 func draw_title(size):
@@ -1025,13 +1225,13 @@ func draw_title(size):
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.01, 0.03, 0.05, 0.34))
 	draw_speed_lines(size, 0.38)
 	draw_centered("CHAINBREAK", 138, 82, Color(0.93, 1.0, 0.96))
-	draw_centered("ROGUELITE CYCLING", 205, 27, Color(0.55, 0.95, 1.0))
-	draw_centered("Deck-build your legs. Thread the death peloton. Break the final sprint.", 265, 23, Color(0.88, 0.93, 0.91))
+	draw_centered(t("subtitle"), 205, 27, Color(0.55, 0.95, 1.0))
+	draw_centered(t("tagline"), 265, 23, Color(0.88, 0.93, 0.91))
 	start_button_rect = Rect2(size.x * 0.5 - 150, 332, 300, 62)
 	draw_round_rect(start_button_rect, Color(1.0, 0.28, 0.2), Color(1.0, 0.82, 0.55), 4.0)
-	draw_centered("START RUN", 374, 28, Color(0.03, 0.05, 0.06))
-	draw_centered("Space/Enter: start   W/S or arrows: line   Space: hop   1-5: cards", 455, 21, Color(0.78, 0.88, 0.88))
-	draw_centered("6 stages, card rewards, parts, hit-stop near misses, and one very rude final boulevard.", 492, 18, Color(0.68, 0.76, 0.76))
+	draw_centered(t("start"), 374, 28, Color(0.03, 0.05, 0.06))
+	draw_centered(t("title_controls"), 455, 21, Color(0.78, 0.88, 0.88))
+	draw_centered(t("title_note"), 492, 18, Color(0.68, 0.76, 0.76))
 
 
 func draw_race(size):
@@ -1053,8 +1253,8 @@ func draw_race(size):
 func draw_reward(size):
 	draw_background(size, 0.52)
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.04, 0.05, 0.58))
-	draw_centered("Stage Clear", 92, 54, Color(0.92, 1.0, 0.94))
-	draw_centered("Choose a card or part for the next road.", 142, 22, Color(0.8, 0.9, 0.9))
+	draw_centered(t("stage_clear"), 92, 54, Color(0.92, 1.0, 0.94))
+	draw_centered(t("reward_prompt"), 142, 22, Color(0.8, 0.9, 0.9))
 	reward_rects.clear()
 	var start_x = size.x * 0.5 - 435
 	for i in range(reward_choices.size()):
@@ -1065,26 +1265,34 @@ func draw_reward(size):
 			draw_reward_card(rect, choice["id"], i + 1)
 		else:
 			draw_reward_relic(rect, choice["id"], i + 1)
-	draw_centered("Current deck: %s cards   Parts: %s   Score: %s" % [deck.size(), relics.size(), score], 602, 21, Color(0.75, 0.86, 0.86))
+	draw_centered(t("deck_summary") % [deck.size(), relics.size(), score], 602, 21, Color(0.75, 0.86, 0.86))
 
 
 func draw_game_over(size):
 	draw_background(size, 0.4)
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.08, 0.02, 0.025, 0.72))
-	draw_centered("RACE OVER", 184, 68, Color(1.0, 0.28, 0.22))
+	draw_centered(t("race_over"), 184, 68, Color(1.0, 0.28, 0.22))
 	draw_centered(death_reason, 255, 26, Color(1.0, 0.8, 0.7))
-	draw_centered("Score %s   Best combo x%s   Stage %s/6" % [score, best_combo, stage_index + 1], 312, 26, Color(0.88, 0.95, 0.95))
-	draw_centered("Press R / Enter / Space to run it back.", 394, 23, Color(0.72, 0.88, 0.9))
+	draw_centered(t("result_stats") % [score, best_combo, stage_index + 1], 312, 26, Color(0.88, 0.95, 0.95))
+	draw_centered(t("retry"), 394, 23, Color(0.72, 0.88, 0.9))
 
 
 func draw_win(size):
 	draw_background(size, 0.8)
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.03, 0.03, 0.36))
 	draw_speed_lines(size, 0.65)
-	draw_centered("PHOTO FINISH!", 168, 68, Color(1.0, 0.92, 0.45))
-	draw_centered("You broke the peloton and survived the boulevard.", 238, 27, Color(0.9, 1.0, 0.94))
-	draw_centered("Score %s   Best combo x%s   Deck %s   Parts %s" % [score, best_combo, deck.size(), relics.size()], 306, 26, Color(0.86, 0.94, 0.95))
-	draw_centered("Press R / Enter / Space for another route.", 406, 23, Color(0.75, 0.9, 0.92))
+	draw_centered(t("win_title"), 168, 68, Color(1.0, 0.92, 0.45))
+	draw_centered(t("win_body"), 238, 27, Color(0.9, 1.0, 0.94))
+	draw_centered(t("win_stats") % [score, best_combo, deck.size(), relics.size()], 306, 26, Color(0.86, 0.94, 0.95))
+	draw_centered(t("win_retry"), 406, 23, Color(0.75, 0.9, 0.92))
+
+
+func draw_language_button(size):
+	var y = 88 if screen == Screen.RACE else 12
+	language_button_rect = Rect2(size.x - 132, y, 110, 34)
+	draw_rect(language_button_rect, Color(0.02, 0.04, 0.05, 0.78))
+	draw_rect(language_button_rect, Color(0.55, 0.95, 1.0, 0.72), false, 3)
+	draw_text(t("lang_button"), language_button_rect.position + Vector2(13, 23), 15, Color(0.86, 1.0, 0.95))
 
 
 func draw_background(size, alpha):
@@ -1146,7 +1354,7 @@ func draw_obstacle_icon(kind, pos, size):
 	else:
 		draw_circle(pos, size * 0.35, Color(1.0, 0.25, 0.2))
 	if kind == "hairpin":
-		draw_text("SLOW", pos + Vector2(-24, -74), 14, Color(1.0, 0.88, 0.42))
+		draw_text(t("slow"), pos + Vector2(-24, -74), 14, Color(1.0, 0.88, 0.42))
 
 
 func draw_rivals():
@@ -1203,21 +1411,21 @@ func draw_arc_ribbon(pos, color):
 func draw_hud(size):
 	var stage = STAGES[stage_index]
 	draw_rect(Rect2(0, 0, size.x, 82), Color(0.01, 0.018, 0.022, 0.72))
-	draw_text(stage["name"], Vector2(24, 32), 21, Color(0.92, 1.0, 0.94))
+	draw_text(stage_name(stage_index), Vector2(24, 32), 21, Color(0.92, 1.0, 0.94))
 	draw_text("%s / 6" % (stage_index + 1), Vector2(24, 61), 16, Color(0.58, 0.9, 1.0))
-	draw_bar(Rect2(420, 24, 220, 16), stamina / max_stamina, Color(0.2, 0.95, 0.72), "STAMINA")
-	draw_bar(Rect2(420, 52, 220, 16), speed / (51.0 + get_relic_bonus("max_speed")), Color(1.0, 0.36, 0.24), "SPEED %.1f" % speed)
+	draw_bar(Rect2(420, 24, 220, 16), stamina / max_stamina, Color(0.2, 0.95, 0.72), t("stamina"))
+	draw_bar(Rect2(420, 52, 220, 16), speed / (51.0 + get_relic_bonus("max_speed")), Color(1.0, 0.36, 0.24), t("speed") % speed)
 	var progress = distance / float(stage["length"])
-	draw_bar(Rect2(678, 34, 245, 18), progress, Color(1.0, 0.86, 0.28), "DISTANCE")
+	draw_bar(Rect2(678, 34, 245, 18), progress, Color(1.0, 0.86, 0.28), t("distance"))
 	for i in range(max_hp):
 		var c = Color(1.0, 0.22, 0.16) if i < hp else Color(0.18, 0.18, 0.18)
 		draw_circle(Vector2(935 + i * 28, 43), 10, c)
-	draw_text("Score %s" % score, Vector2(1035, 34), 22, Color(0.95, 1.0, 0.94))
+	draw_text(t("score") % score, Vector2(1035, 34), 22, Color(0.95, 1.0, 0.94))
 	draw_text("x%s" % combo, Vector2(1165, 34), 34, Color(1.0, 0.92, 0.35) if combo >= 5 else Color(0.8, 0.95, 1.0))
 	if guard > 0:
-		draw_text("Guard %s" % guard, Vector2(1035, 64), 16, Color(1.0, 0.88, 0.35))
+		draw_text(t("guard") % guard, Vector2(1035, 64), 16, Color(1.0, 0.88, 0.35))
 	if revive_tokens > 0:
-		draw_text("Save %s" % revive_tokens, Vector2(1115, 64), 16, Color(1.0, 0.78, 0.35))
+		draw_text(t("save") % revive_tokens, Vector2(1115, 64), 16, Color(1.0, 0.78, 0.35))
 	draw_status_chips()
 
 
@@ -1255,9 +1463,9 @@ func draw_touch_controls(size):
 	touch_up_rect = Rect2(24, size.y - 234, 72, 56)
 	touch_down_rect = Rect2(24, size.y - 116, 72, 56)
 	touch_jump_rect = Rect2(size.x - 150, size.y - 150, 112, 78)
-	draw_touch_button(touch_up_rect, "UP")
-	draw_touch_button(touch_down_rect, "DOWN")
-	draw_touch_button(touch_jump_rect, "HOP")
+	draw_touch_button(touch_up_rect, t("touch_up"))
+	draw_touch_button(touch_down_rect, t("touch_down"))
+	draw_touch_button(touch_jump_rect, t("touch_hop"))
 
 
 func draw_touch_button(rect, label):
@@ -1276,9 +1484,9 @@ func draw_game_card(rect, id, number):
 		draw_texture_rect(card_texture, Rect2(rect.position + Vector2(10, 10), Vector2(rect.size.x - 20, 52)), false, Color(1, 1, 1, 0.42))
 	draw_rect(Rect2(rect.position + Vector2(10, 10), Vector2(rect.size.x - 20, 52)), Color(card["color"], 0.16))
 	draw_text(str(number), rect.position + Vector2(14, 31), 18, Color(0.04, 0.05, 0.06))
-	draw_text(card["name"], rect.position + Vector2(16, 79), 17, Color(0.95, 1.0, 0.95))
-	draw_text("Cost %s" % max(0, int(card["cost"]) - int(has_relic("chainwax"))), rect.position + Vector2(16, 103), 15, Color(1.0, 0.84, 0.44))
-	draw_wrapped(card["desc"], rect.position + Vector2(16, 124), rect.size.x - 28, 13, Color(0.78, 0.87, 0.86))
+	draw_fit_text(card_name(id), rect.position + Vector2(16, 79), rect.size.x - 32, 17, 12, Color(0.95, 1.0, 0.95))
+	draw_text(t("cost") % max(0, int(card["cost"]) - int(has_relic("chainwax"))), rect.position + Vector2(16, 103), 15, Color(1.0, 0.84, 0.44))
+	draw_wrapped(card_desc(id), rect.position + Vector2(16, 124), rect.size.x - 28, 13, Color(0.78, 0.87, 0.86))
 
 
 func draw_reward_card(rect, id, number):
@@ -1287,9 +1495,9 @@ func draw_reward_card(rect, id, number):
 	if card_texture != null:
 		draw_texture_rect(card_texture, Rect2(rect.position + Vector2(14, 14), Vector2(rect.size.x - 28, 116)), false, Color(1, 1, 1, 0.58))
 	draw_text("%s" % number, rect.position + Vector2(20, 40), 25, Color(0.03, 0.04, 0.05))
-	draw_text(card["name"], rect.position + Vector2(22, 166), 24, Color(0.94, 1.0, 0.94))
+	draw_fit_text(card_name(id), rect.position + Vector2(22, 166), rect.size.x - 44, 24, 15, Color(0.94, 1.0, 0.94))
 	draw_text(card["rarity"].to_upper(), rect.position + Vector2(22, 199), 15, Color(1.0, 0.86, 0.45))
-	draw_wrapped(card["desc"], rect.position + Vector2(22, 234), rect.size.x - 44, 18, Color(0.8, 0.9, 0.9))
+	draw_wrapped(card_desc(id), rect.position + Vector2(22, 234), rect.size.x - 44, 18, Color(0.8, 0.9, 0.9))
 
 
 func draw_reward_relic(rect, id, number):
@@ -1298,8 +1506,8 @@ func draw_reward_relic(rect, id, number):
 	if atlas_texture != null:
 		draw_texture_rect_region(atlas_texture, Rect2(rect.position + Vector2(74, 38), Vector2(122, 122)), Rect2(256, 128, 128, 128))
 	draw_text("%s" % number, rect.position + Vector2(20, 40), 25, Color(0.03, 0.04, 0.05))
-	draw_text(relic["name"], rect.position + Vector2(22, 196), 24, Color(1.0, 0.92, 0.55))
-	draw_wrapped(relic["desc"], rect.position + Vector2(22, 234), rect.size.x - 44, 18, Color(0.86, 0.9, 0.86))
+	draw_fit_text(relic_name(id), rect.position + Vector2(22, 196), rect.size.x - 44, 24, 15, Color(1.0, 0.92, 0.55))
+	draw_wrapped(relic_desc(id), rect.position + Vector2(22, 234), rect.size.x - 44, 18, Color(0.86, 0.9, 0.86))
 
 
 func draw_particles():
@@ -1338,6 +1546,14 @@ func draw_text(text, pos, size, color):
 	font.draw_string(get_canvas_item(), pos, str(text), HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
 
 
+func draw_fit_text(text, pos, width, max_size, min_size, color):
+	var font = get_theme_default_font()
+	var size = max_size
+	while size > min_size and font.get_string_size(str(text), HORIZONTAL_ALIGNMENT_LEFT, -1, size).x > width:
+		size -= 1
+	font.draw_string(get_canvas_item(), pos, str(text), HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
+
+
 func draw_centered(text, y, size, color):
 	var font = get_theme_default_font()
 	var measured = font.get_string_size(str(text), HORIZONTAL_ALIGNMENT_LEFT, -1, size)
@@ -1346,12 +1562,19 @@ func draw_centered(text, y, size, color):
 
 
 func draw_wrapped(text, pos, width, size, color):
-	var words = str(text).split(" ")
+	var source = str(text)
+	var words = source.split(" ")
+	var joiner = " "
+	if words.size() <= 1 and source.length() > 0:
+		words = []
+		joiner = ""
+		for i in range(source.length()):
+			words.append(source.substr(i, 1))
 	var line = ""
 	var y = pos.y
 	var font = get_theme_default_font()
 	for word in words:
-		var candidate = word if line == "" else line + " " + word
+		var candidate = word if line == "" else line + joiner + word
 		if font.get_string_size(candidate, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x > width and line != "":
 			draw_text(line, Vector2(pos.x, y), size, color)
 			y += size + 4

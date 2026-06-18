@@ -27,6 +27,7 @@ godot --headless --path /Users/ryoga/Documents/ShakarikiSports2 --export-release
 - `W/S` または `↑/↓`: ライン変更
 - `1`-`5`: 手札カードを使用
 - マウスクリック: カード、報酬、タイトルボタンを選択
+- `L` / 右上ボタン: 日本語/英語を切り替え
 - `R`: ゲームオーバー/クリア後にリスタート
 - `Esc`: タイトルへ戻る
 
