@@ -4,7 +4,7 @@ enum Screen { TITLE, RACE, REWARD, GAME_OVER, WIN }
 
 const LANES = [405.0, 478.0, 552.0]
 const PLAYER_X = 230.0
-const PX_PER_METER = 0.62
+const PX_PER_METER = 0.78
 const MAX_HAND = 5
 
 const STAGES = [
@@ -358,7 +358,16 @@ const UI_TEXT = {
 		"crashed": "Crashed on %s",
 		"stamina": "STAMINA",
 		"speed": "SPEED %.1f",
-		"distance": "DISTANCE"
+		"distance": "DISTANCE",
+		"rival": "RIVAL",
+		"rival_ahead": "RIVAL +%sm",
+		"rival_behind": "RIVAL -%sm",
+		"rival_start": "Catch the breakaway. Rival +%sm.",
+		"rival_pass": "RIVAL BROKEN +%s",
+		"rival_attack": "RIVAL ATTACK",
+		"rival_clear": "Rival beaten +%s",
+		"rival_lost": "Rival escaped. No breakaway bonus.",
+		"rival_total": "Rivals beaten %s / %s"
 	},
 	"ja": {
 		"subtitle": "ローグライト・サイクリング",
@@ -390,7 +399,16 @@ const UI_TEXT = {
 		"crashed": "%s で落車",
 		"stamina": "スタミナ",
 		"speed": "速度 %.1f",
-		"distance": "距離"
+		"distance": "距離",
+		"rival": "ライバル",
+		"rival_ahead": "ライバル +%sm",
+		"rival_behind": "ライバル -%sm",
+		"rival_start": "逃げるライバルを追え。+%sm先行。",
+		"rival_pass": "ライバル撃破 +%s",
+		"rival_attack": "ライバル加速",
+		"rival_clear": "ライバル撃破 +%s",
+		"rival_lost": "ライバルに逃げ切られた。ボーナスなし。",
+		"rival_total": "撃破ライバル %s / %s"
 	}
 }
 
@@ -408,6 +426,14 @@ var sfx = {}
 var stage_index = 0
 var distance = 0.0
 var speed = 24.0
+var rival_distance = 0.0
+var rival_speed = 25.0
+var rival_lane = 1
+var rival_lane_visual = 1.0
+var rival_last_gap = 0.0
+var rival_flash_timer = 0.0
+var rival_beaten = 0
+var last_stage_rival_result = ""
 var burst = 0.0
 var stamina = 100.0
 var max_stamina = 100.0
@@ -580,6 +606,7 @@ func _update_visual_timers(delta):
 	flash_timer = max(0.0, flash_timer - delta)
 	pulse_timer = max(0.0, pulse_timer - delta)
 	flow_timer = max(0.0, flow_timer - delta)
+	rival_flash_timer = max(0.0, rival_flash_timer - delta)
 	message_timer = max(0.0, message_timer - delta)
 
 
@@ -702,6 +729,8 @@ func start_run():
 	score = 0
 	combo = 0
 	best_combo = 0
+	rival_beaten = 0
+	last_stage_rival_result = ""
 	guard = 0
 	revive_tokens = 0
 	lucky_helmet_ready = false
@@ -716,6 +745,13 @@ func setup_stage(index):
 	stage_index = index
 	distance = 0.0
 	speed = 24.0 + get_relic_bonus("base_speed")
+	rival_distance = 120.0 + stage_index * 32.0
+	rival_speed = 25.8 + stage_index * 0.65
+	rival_lane = (stage_index + 1) % 3
+	rival_lane_visual = float(rival_lane)
+	rival_last_gap = rival_distance - distance
+	rival_flash_timer = 1.2
+	last_stage_rival_result = ""
 	burst = 0.0
 	lane = 1
 	lane_visual = 1.0
@@ -746,7 +782,7 @@ func setup_stage(index):
 	tempo_timer = 0.0
 	for i in range(4 + int(has_relic("radio"))):
 		draw_card()
-	show_message(stage_flavor(stage_index), 3.0)
+	show_message(t("rival_start") % int(rival_distance), 3.0)
 
 
 func _update_race(delta):
@@ -768,6 +804,7 @@ func _update_race(delta):
 		draw_timer = 3.0
 
 	_update_physics(delta, stage)
+	_update_rival(delta, stage)
 	_generate_obstacles(stage)
 	_check_obstacles()
 	_update_particles(delta)
@@ -778,8 +815,11 @@ func _update_race(delta):
 
 func _update_physics(delta, stage):
 	var regen = 7.5
+	var chase_draft = rival_draft_strength()
 	if draft_timer > 0.0:
 		regen += 7.0
+	elif chase_draft > 0.0:
+		regen += 4.5 * chase_draft
 	if tempo_timer > 0.0:
 		regen += 11.0
 	if combo >= 5:
@@ -800,6 +840,8 @@ func _update_physics(delta, stage):
 		base += abs(grade) * 4.0
 	if wind > 0.0 and draft_timer <= 0.0:
 		base -= wind * 3.8
+	if draft_timer <= 0.0 and chase_draft > 0.0:
+		base += 2.4 * chase_draft
 	if brake_timer > 0.0:
 		base -= 4.2
 	if tempo_timer > 0.0:
@@ -822,6 +864,60 @@ func _update_physics(delta, stage):
 				_make_hitstop(0.025, 3.0)
 				add_text_particle("clean landing", Vector2(PLAYER_X + 35, current_player_y() - 34), Color(0.8, 1.0, 0.9))
 			on_ground = true
+
+
+func _update_rival(delta, stage):
+	var grade = float(stage["grade"])
+	var wind = float(stage["wind"])
+	var base = 26.1 + stage_index * 0.65
+	if grade > 0.0:
+		base -= grade * 3.0
+	else:
+		base += abs(grade) * 2.5
+	base -= wind * 0.9
+	if stage["tag"] == "BOSS":
+		base += 1.2
+	if stage["tag"] == "PACK":
+		base += 0.8
+
+	var gap = rival_distance - distance
+	base += clamp(-gap / 92.0, -2.8, 4.2)
+	if gap > 180.0:
+		base -= 2.0
+	if combo >= 5:
+		base -= 1.4
+	var target = clamp(base, 18.0, 43.0)
+	rival_speed = move_toward(rival_speed, target, delta * 3.0)
+	rival_distance += rival_speed * delta
+
+	rival_lane = int(clamp(round(1.0 + sin((rival_distance + stage_index * 140.0) * 0.011)), 0.0, 2.0))
+	rival_lane_visual = lerp(rival_lane_visual, float(rival_lane), min(1.0, delta * 3.2))
+
+	var new_gap = rival_distance - distance
+	if rival_last_gap > 10.0 and new_gap <= 0.0:
+		var bonus = 220 + stage_index * 60 + combo * 25
+		score += bonus
+		rival_flash_timer = 1.15
+		pulse_timer = max(pulse_timer, 0.32)
+		flow_timer = max(flow_timer, 1.2)
+		_make_hitstop(0.06, 10.0)
+		add_text_particle(t("rival_pass") % bonus, Vector2(390, current_player_y() - 116), Color(1.0, 0.38, 0.22))
+		play_sfx("near_miss", 1.14)
+	elif rival_last_gap < -55.0 and new_gap > 18.0:
+		rival_flash_timer = 0.75
+		add_text_particle(t("rival_attack"), Vector2(565, 260), Color(1.0, 0.24, 0.16))
+	rival_last_gap = new_gap
+
+
+func rival_gap():
+	return rival_distance - distance
+
+
+func rival_draft_strength():
+	var gap = rival_gap()
+	if gap <= 18.0 or gap >= 150.0:
+		return 0.0
+	return clamp(1.0 - abs(gap - 72.0) / 78.0, 0.0, 1.0)
 
 
 func _generate_obstacles(stage):
@@ -958,6 +1054,14 @@ func crash(kind):
 
 func complete_stage():
 	score += int(stamina) * 4 + best_combo * 75
+	var stage_length = float(STAGES[stage_index]["length"])
+	if rival_distance < stage_length:
+		var bonus = 560 + stage_index * 115 + best_combo * 22
+		score += bonus
+		rival_beaten += 1
+		last_stage_rival_result = t("rival_clear") % bonus
+	else:
+		last_stage_rival_result = t("rival_lost")
 	_make_hitstop(0.15, 13.0)
 	if stage_index >= STAGES.size() - 1:
 		screen = Screen.WIN
@@ -1311,6 +1415,8 @@ func draw_reward(size):
 	draw_rect(Rect2(Vector2.ZERO, size), Color(0.02, 0.04, 0.05, 0.58))
 	draw_centered(t("stage_clear"), 92, 54, Color(0.92, 1.0, 0.94))
 	draw_centered(t("reward_prompt"), 142, 22, Color(0.8, 0.9, 0.9))
+	if last_stage_rival_result != "":
+		draw_centered(last_stage_rival_result, 178, 22, Color(1.0, 0.68, 0.42))
 	reward_rects.clear()
 	var start_x = size.x * 0.5 - 435
 	for i in range(reward_choices.size()):
@@ -1340,6 +1446,7 @@ func draw_win(size):
 	draw_centered(t("win_title"), 168, 68, Color(1.0, 0.92, 0.45))
 	draw_centered(t("win_body"), 238, 27, Color(0.9, 1.0, 0.94))
 	draw_centered(t("win_stats") % [score, best_combo, deck.size(), relics.size()], 306, 26, Color(0.86, 0.94, 0.95))
+	draw_centered(t("rival_total") % [rival_beaten, STAGES.size()], 350, 23, Color(1.0, 0.72, 0.48))
 	draw_centered(t("win_retry"), 406, 23, Color(0.75, 0.9, 0.92))
 
 
@@ -1360,6 +1467,7 @@ func draw_background(size, alpha):
 
 
 func draw_road(size):
+	var rush = speed_feel()
 	var road = PackedVector2Array([
 		Vector2(-80, size.y + 80),
 		Vector2(size.x + 80, size.y + 80),
@@ -1369,12 +1477,14 @@ func draw_road(size):
 	draw_colored_polygon(road, Color(0.095, 0.12, 0.13, 0.95))
 	for y in LANES:
 		draw_line(Vector2(0, y + 35), Vector2(size.x, y + 35), Color(1, 1, 1, 0.14), 2)
-		var dash_offset = fmod(distance * 9.0, 96.0)
+		var dash_offset = fmod(distance * (14.0 + rush * 20.0), 112.0)
+		var dash_len = 46.0 + rush * 58.0
 		for x in range(-120, int(size.x) + 140, 96):
-			draw_line(Vector2(x - dash_offset, y), Vector2(x + 42 - dash_offset, y), Color(0.88, 0.94, 0.9, 0.48), 4)
+			draw_line(Vector2(x - dash_offset, y), Vector2(x + dash_len - dash_offset, y), Color(0.88, 0.94, 0.9, 0.42 + rush * 0.22), 4 + rush * 2.0)
 	draw_line(Vector2(0, 360), Vector2(size.x, 360), Color(0.2, 0.95, 1.0, 0.25), 5)
 	draw_line(Vector2(0, 640), Vector2(size.x, 640), Color(1.0, 0.25, 0.2, 0.23), 6)
-	draw_speed_lines(size, min(0.85, max(0.12, speed / 70.0)))
+	draw_ground_rush(size, rush)
+	draw_speed_lines(size, min(1.15, 0.22 + rush))
 
 
 func draw_obstacles():
@@ -1414,6 +1524,7 @@ func draw_obstacle_icon(kind, pos, size):
 
 
 func draw_rivals():
+	draw_main_rival()
 	var stage = STAGES[stage_index]
 	if stage["tag"] != "PACK" and stage["tag"] != "BOSS":
 		return
@@ -1423,12 +1534,41 @@ func draw_rivals():
 		draw_simple_bike(pos, Color(1.0, 0.24 + i * 0.2, 0.18 + i * 0.18, 0.86), 0.68)
 
 
+func draw_main_rival():
+	var size = get_viewport_rect().size
+	var gap = rival_gap()
+	var x = PLAYER_X + 250.0 + gap * 1.35
+	if gap < 0.0:
+		x = PLAYER_X + 96.0 + gap * 0.65
+	x = clamp(x, PLAYER_X - 26.0, size.x - 150.0)
+	var y = LANES[0] + (LANES[2] - LANES[0]) * (rival_lane_visual / 2.0) - 8.0
+	var pos = Vector2(x, y)
+	var pressure = clamp(1.0 - abs(gap) / 165.0, 0.0, 1.0)
+	if gap > 8.0 and gap < 150.0:
+		draw_arc_ribbon(pos + Vector2(-58, -34), Color(1.0, 0.32, 0.18, 0.22 + pressure * 0.3))
+	for i in range(3, 0, -1):
+		var alpha = (0.05 + pressure * 0.08) * i
+		draw_simple_bike(pos + Vector2(i * 20.0, -i * 3.0), Color(1.0, 0.22, 0.14, alpha), 0.72)
+	draw_simple_bike(pos, Color(1.0, 0.24, 0.14, 0.96), 0.78 + pressure * 0.05)
+	draw_text(t("rival"), pos + Vector2(-36, -88), 14, Color(1.0, 0.5, 0.32))
+	if rival_flash_timer > 0.0:
+		draw_circle(pos + Vector2(6, -42), 82 + rival_flash_timer * 24.0, Color(1.0, 0.22, 0.12, 0.08 + rival_flash_timer * 0.08))
+
+
 func draw_player():
 	var pos = Vector2(PLAYER_X, LANES[0] + (LANES[2] - LANES[0]) * (lane_visual / 2.0) - air_height)
+	var rush = speed_feel()
+	if rider_texture != null:
+		for i in range(3, 0, -1):
+			var ghost_rect = Rect2(pos.x - 94 - i * (18.0 + rush * 20.0), pos.y - 134 + i * 3.0, 188, 188)
+			draw_texture_rect(rider_texture, ghost_rect, false, Color(0.35, 1.0, 0.95, 0.035 + rush * 0.05 * i))
+	for i in range(5):
+		var trail_y = pos.y - 42 + i * 13
+		draw_line(Vector2(pos.x - 28 - i * 18, trail_y), Vector2(pos.x - 145 - rush * 120.0, trail_y + 6), Color(0.55, 1.0, 0.95, 0.08 + rush * 0.12), 2 + rush * 2.0)
 	if evade_timer > 0.0:
 		draw_circle(pos + Vector2(42, -32), 84, Color(0.65, 0.45, 1.0, 0.16))
-	if draft_timer > 0.0:
-		draw_arc_ribbon(pos + Vector2(20, -34), Color(0.25, 1.0, 0.8, 0.5))
+	if draft_timer > 0.0 or rival_draft_strength() > 0.0:
+		draw_arc_ribbon(pos + Vector2(20, -34), Color(0.25, 1.0, 0.8, 0.35 + rival_draft_strength() * 0.25))
 	if rider_texture != null:
 		var rect = Rect2(pos.x - 94, pos.y - 134, 188, 188)
 		draw_texture_rect(rider_texture, rect, false, Color(1, 1, 1, 0.96))
@@ -1441,15 +1581,16 @@ func draw_player():
 
 func draw_simple_bike(pos, color, scale):
 	var w = 42.0 * scale
+	var alpha = color.a
 	var rear = pos + Vector2(-42 * scale, 0)
 	var front = pos + Vector2(54 * scale, 0)
 	var crank = pos + Vector2(6 * scale, -18 * scale)
 	var seat = pos + Vector2(-10 * scale, -58 * scale)
 	var bar = pos + Vector2(58 * scale, -54 * scale)
-	draw_circle(rear, w, Color(0.05, 0.08, 0.09, 0.9))
-	draw_arc(rear, w, 0, TAU, 30, Color(0.9, 1.0, 1.0, 0.9), 4 * scale)
-	draw_circle(front, w, Color(0.05, 0.08, 0.09, 0.9))
-	draw_arc(front, w, 0, TAU, 30, Color(0.9, 1.0, 1.0, 0.9), 4 * scale)
+	draw_circle(rear, w, Color(0.05, 0.08, 0.09, 0.9 * alpha))
+	draw_arc(rear, w, 0, TAU, 30, Color(0.9, 1.0, 1.0, 0.9 * alpha), 4 * scale)
+	draw_circle(front, w, Color(0.05, 0.08, 0.09, 0.9 * alpha))
+	draw_arc(front, w, 0, TAU, 30, Color(0.9, 1.0, 1.0, 0.9 * alpha), 4 * scale)
 	draw_line(rear, crank, color, 6 * scale)
 	draw_line(crank, front, color, 6 * scale)
 	draw_line(crank, seat, color, 6 * scale)
@@ -1472,7 +1613,9 @@ func draw_hud(size):
 	draw_bar(Rect2(420, 24, 220, 16), stamina / max_stamina, Color(0.2, 0.95, 0.72), t("stamina"))
 	draw_bar(Rect2(420, 52, 220, 16), speed / (51.0 + get_relic_bonus("max_speed")), Color(1.0, 0.36, 0.24), t("speed") % speed)
 	var progress = distance / float(stage["length"])
-	draw_bar(Rect2(678, 34, 245, 18), progress, Color(1.0, 0.86, 0.28), t("distance"))
+	var progress_rect = Rect2(678, 34, 245, 18)
+	draw_bar(progress_rect, progress, Color(1.0, 0.86, 0.28), t("distance"))
+	draw_rival_progress_marker(progress_rect, float(stage["length"]))
 	for i in range(max_hp):
 		var c = Color(1.0, 0.22, 0.16) if i < hp else Color(0.18, 0.18, 0.18)
 		draw_circle(Vector2(935 + i * 28, 43), 10, c)
@@ -1483,6 +1626,21 @@ func draw_hud(size):
 	if revive_tokens > 0:
 		draw_text(t("save") % revive_tokens, Vector2(1115, 64), 16, Color(1.0, 0.78, 0.35))
 	draw_status_chips()
+
+
+func draw_rival_progress_marker(rect, stage_length):
+	var rival_progress = clamp(rival_distance / stage_length, 0.0, 1.0)
+	var x = rect.position.x + rect.size.x * rival_progress
+	var color = Color(1.0, 0.24, 0.14)
+	draw_line(Vector2(x, rect.position.y - 8), Vector2(x, rect.position.y + rect.size.y + 8), color, 3)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(x, rect.position.y - 11),
+		Vector2(x - 7, rect.position.y - 2),
+		Vector2(x + 7, rect.position.y - 2)
+	]), color)
+	var gap = rival_gap()
+	var gap_text = t("rival_ahead") % int(max(0.0, gap)) if gap >= 0.0 else t("rival_behind") % int(abs(gap))
+	draw_text(gap_text, Vector2(rect.position.x, rect.position.y + 42), 14, Color(1.0, 0.54, 0.36))
 
 
 func draw_status_chips():
@@ -1599,12 +1757,31 @@ func draw_particles():
 			draw_text(str(p["text"]), p["pos"], 20, color)
 
 
+func speed_feel():
+	var gap_boost = 0.0
+	if abs(rival_gap()) < 150.0:
+		gap_boost = 0.22
+	return clamp((speed - 17.0) / 23.0 + min(0.42, burst * 0.018) + min(0.3, combo * 0.018) + gap_boost, 0.0, 1.35)
+
+
+func draw_ground_rush(size, amount):
+	for i in range(22):
+		var depth = float(i) / 21.0
+		var y = lerp(370.0, size.y + 34.0, depth)
+		var drift = fmod(distance * (18.0 + amount * 42.0) * (0.35 + depth), size.x + 360.0)
+		var x = fmod(i * 137.0 - drift, size.x + 360.0) - 180.0
+		var len = (60.0 + depth * 260.0) * (0.35 + amount)
+		var alpha = (0.025 + depth * 0.08) * amount
+		draw_line(Vector2(x, y), Vector2(x - len, y + 8.0 + depth * 16.0), Color(0.88, 1.0, 0.96, alpha), 1.2 + depth * 4.0)
+
+
 func draw_speed_lines(size, amount):
-	for i in range(18):
-		var y = 124 + i * 29 + fmod(distance * (0.2 + amount), 29.0)
-		var x = fmod(distance * 14.0 + i * 87.0, size.x + 260.0) - 180.0
-		var len = 80 + amount * 230
-		draw_line(Vector2(x, y), Vector2(x + len, y + rng.randf_range(-6, 6)), Color(0.65, 0.95, 1.0, 0.08 + amount * 0.18), 2 + amount * 3)
+	var count = 18 + int(amount * 18.0)
+	for i in range(count):
+		var y = 116 + i * 21 + fmod(distance * (0.8 + amount * 2.5), 33.0)
+		var x = fmod(distance * (18.0 + amount * 34.0) + i * 87.0, size.x + 320.0) - 220.0
+		var len = 100 + amount * 420
+		draw_line(Vector2(x, y), Vector2(x + len, y + rng.randf_range(-8, 8)), Color(0.65, 0.95, 1.0, 0.07 + amount * 0.2), 2 + amount * 3.5)
 
 
 func draw_bar(rect, t, color, label):
