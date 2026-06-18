@@ -463,6 +463,10 @@ var touch_up_rect = Rect2()
 var touch_down_rect = Rect2()
 var touch_jump_rect = Rect2()
 var language_button_rect = Rect2()
+var selected_card_index = -1
+var selected_card_pinned = false
+var selected_card_rect = Rect2()
+var suppress_mouse_click_timer = 0.0
 
 
 func _ready():
@@ -552,12 +556,14 @@ func hazard_name_localized(kind):
 
 func _process(delta):
 	_update_visual_timers(delta)
+	suppress_mouse_click_timer = max(0.0, suppress_mouse_click_timer - delta)
 	if screen == Screen.RACE:
 		if hitstop_timer > 0.0:
 			hitstop_timer = max(0.0, hitstop_timer - delta)
 			_update_particles(delta * 0.25)
 		else:
 			_update_race(delta)
+	_update_card_selection()
 	queue_redraw()
 
 
@@ -572,10 +578,12 @@ func _update_visual_timers(delta):
 func _input(event):
 	if event is InputEventKey and event.pressed and not event.echo:
 		_handle_key(event.keycode)
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_handle_click(event.position)
 	if event is InputEventScreenTouch and event.pressed:
-		_handle_click(event.position)
+		suppress_mouse_click_timer = 0.35
+		_handle_click(event.position, true)
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if suppress_mouse_click_timer <= 0.0:
+			_handle_click(event.position, false)
 
 
 func _handle_key(keycode):
@@ -597,6 +605,7 @@ func _handle_key(keycode):
 			change_lane(1)
 		elif keycode >= KEY_1 and keycode <= KEY_5:
 			play_card(keycode - KEY_1)
+			clear_card_selection()
 	elif screen == Screen.REWARD:
 		if keycode >= KEY_1 and keycode <= KEY_3:
 			choose_reward(keycode - KEY_1)
@@ -605,27 +614,41 @@ func _handle_key(keycode):
 			start_run()
 
 
-func _handle_click(pos):
+func _handle_click(pos, is_touch := false):
 	if language_button_rect.has_point(pos):
 		toggle_language()
+		clear_card_selection()
 		return
 	if screen == Screen.TITLE:
 		if start_button_rect.has_point(pos):
 			start_run()
 	elif screen == Screen.RACE:
+		if selected_card_index >= 0 and selected_card_rect.has_point(pos):
+			play_card(selected_card_index)
+			clear_card_selection()
+			return
 		if touch_up_rect.has_point(pos):
 			change_lane(-1)
+			clear_card_selection()
 			return
 		if touch_down_rect.has_point(pos):
 			change_lane(1)
+			clear_card_selection()
 			return
 		if touch_jump_rect.has_point(pos):
 			try_jump(1.0)
+			clear_card_selection()
 			return
 		for i in range(hand_rects.size()):
 			if hand_rects[i].has_point(pos):
-				play_card(i)
+				if not is_touch or selected_card_index == i:
+					play_card(i)
+					clear_card_selection()
+				else:
+					selected_card_index = i
+					selected_card_pinned = is_touch
 				return
+		clear_card_selection()
 	elif screen == Screen.REWARD:
 		for i in range(reward_rects.size()):
 			if reward_rects[i].has_point(pos):
@@ -633,6 +656,31 @@ func _handle_click(pos):
 				return
 	elif screen == Screen.GAME_OVER or screen == Screen.WIN:
 		start_run()
+
+
+func clear_card_selection():
+	selected_card_index = -1
+	selected_card_pinned = false
+	selected_card_rect = Rect2()
+
+
+func _update_card_selection():
+	if screen != Screen.RACE:
+		clear_card_selection()
+		return
+	if selected_card_index >= hand.size():
+		clear_card_selection()
+		return
+	if selected_card_pinned:
+		return
+	var pos = get_local_mouse_position()
+	if selected_card_index >= 0 and selected_card_rect.has_point(pos):
+		return
+	selected_card_index = -1
+	for i in range(hand_rects.size()):
+		if hand_rects[i].has_point(pos):
+			selected_card_index = i
+			return
 
 
 func start_run():
@@ -1453,10 +1501,24 @@ func draw_card_hand(size):
 	hand_rects.clear()
 	var total_w = hand.size() * 168 + max(0, hand.size() - 1) * 10
 	var x = size.x * 0.5 - total_w * 0.5
+	var active = selected_card_index if selected_card_index >= 0 and selected_card_index < hand.size() else -1
 	for i in range(hand.size()):
 		var rect = Rect2(x + i * 178, size.y - 168, 168, 145)
 		hand_rects.append(rect)
-		draw_game_card(rect, hand[i], i + 1)
+		if i != active:
+			draw_game_card(rect, hand[i], i + 1)
+	if active >= 0:
+		var base = hand_rects[active]
+		var preview_size = Vector2(236, 250)
+		var preview_x = clamp(base.position.x + base.size.x * 0.5 - preview_size.x * 0.5, 18.0, size.x - preview_size.x - 18.0)
+		var preview_y = max(118.0, size.y - 430.0)
+		selected_card_rect = Rect2(Vector2(preview_x, preview_y), preview_size)
+		var glow_rect = Rect2(selected_card_rect.position - Vector2(9, 9), selected_card_rect.size + Vector2(18, 18))
+		draw_rect(glow_rect, Color(0.25, 0.95, 1.0, 0.13))
+		draw_rect(glow_rect, Color(0.62, 1.0, 0.92, 0.76), false, 4)
+		draw_game_card(selected_card_rect, hand[active], active + 1, true)
+	else:
+		selected_card_rect = Rect2()
 
 
 func draw_touch_controls(size):
@@ -1477,16 +1539,24 @@ func draw_touch_button(rect, label):
 	font.draw_string(get_canvas_item(), pos, label, HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(0.86, 1.0, 0.95))
 
 
-func draw_game_card(rect, id, number):
+func draw_game_card(rect, id, number, large := false):
 	var card = CARD_LIBRARY[id]
 	draw_round_rect(rect, Color(0.035, 0.05, 0.06, 0.95), card["color"], 4.0)
+	var art_height = 88 if large else 52
+	var title_y = 123 if large else 79
+	var cost_y = 153 if large else 103
+	var desc_y = 181 if large else 124
+	var number_size = 24 if large else 18
+	var title_size = 22 if large else 17
+	var cost_size = 17 if large else 15
+	var desc_size = 16 if large else 13
 	if card_texture != null:
-		draw_texture_rect(card_texture, Rect2(rect.position + Vector2(10, 10), Vector2(rect.size.x - 20, 52)), false, Color(1, 1, 1, 0.42))
-	draw_rect(Rect2(rect.position + Vector2(10, 10), Vector2(rect.size.x - 20, 52)), Color(card["color"], 0.16))
-	draw_text(str(number), rect.position + Vector2(14, 31), 18, Color(0.04, 0.05, 0.06))
-	draw_fit_text(card_name(id), rect.position + Vector2(16, 79), rect.size.x - 32, 17, 12, Color(0.95, 1.0, 0.95))
-	draw_text(t("cost") % max(0, int(card["cost"]) - int(has_relic("chainwax"))), rect.position + Vector2(16, 103), 15, Color(1.0, 0.84, 0.44))
-	draw_wrapped(card_desc(id), rect.position + Vector2(16, 124), rect.size.x - 28, 13, Color(0.78, 0.87, 0.86))
+		draw_texture_rect(card_texture, Rect2(rect.position + Vector2(10, 10), Vector2(rect.size.x - 20, art_height)), false, Color(1, 1, 1, 0.46 if large else 0.42))
+	draw_rect(Rect2(rect.position + Vector2(10, 10), Vector2(rect.size.x - 20, art_height)), Color(card["color"], 0.16))
+	draw_text(str(number), rect.position + Vector2(14, 36 if large else 31), number_size, Color(0.04, 0.05, 0.06))
+	draw_fit_text(card_name(id), rect.position + Vector2(16, title_y), rect.size.x - 32, title_size, 12, Color(0.95, 1.0, 0.95))
+	draw_text(t("cost") % max(0, int(card["cost"]) - int(has_relic("chainwax"))), rect.position + Vector2(16, cost_y), cost_size, Color(1.0, 0.84, 0.44))
+	draw_wrapped(card_desc(id), rect.position + Vector2(16, desc_y), rect.size.x - 28, desc_size, Color(0.78, 0.87, 0.86))
 
 
 func draw_reward_card(rect, id, number):
